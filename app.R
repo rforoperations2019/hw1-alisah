@@ -24,7 +24,7 @@ ui <- fluidPage(theme = shinytheme("united"),
       
       selectInput("xvar", label = h3("X-Axis for Scatterplot"),
                    choices = list("Trip Distance" = "trip_distance",
-                                  "Number of Passengers" = "passenger_count",
+                                  "Tolls Amount" = "tolls_amount",
                                   "Fare Amount" = "fare_amount"), 
                    selected = "Fare Amount"),
       hr(),
@@ -32,7 +32,7 @@ ui <- fluidPage(theme = shinytheme("united"),
       
       # Select variable for datatable---------------------------------
       checkboxGroupInput(inputId = "selected",
-                         label = "Vendor IDs:",
+                         label = "Filter Vendor IDs for Data Table:",
                          choices = c("1 : Creative Mobile Technologies" = "1", 
                                      "2 : Verifone Inc" = "2"),
                          selected = "1")
@@ -61,13 +61,15 @@ server <- function(input, output) {
   })
   
   output$scatter <- renderPlot({
-    ggplot(taxi, aes_string(x = input$xvar, y = "tip_amount")) +
-      geom_point(alpha = .5, size = 4) + 
+    ggplot(taxi, aes_string(input$xvar, "tip_amount")) +
+      geom_bin2d(bins = 50) + 
+      xlim(0, (mean(taxi[[input$xvar]]) + 10*sd(taxi[[input$xvar]]))) +
+      ylim(0, (mean(taxi$tip_amount)) + 10*sd(taxi$tip_amount)) +
       labs(x = toTitleCase(str_replace_all(input$xvar, '_', ' ')),
-           y = "Tip Amount",
-           title = paste0("Relationship Between ", 
-                          toTitleCase(str_replace_all(input$xvar, '_', ' ')),
-                                      " and Tip Amount"))
+                           y = "Tip Amount",
+           title = paste0("Distribution of ", 
+                          toTitleCase(str_replace_all(input$xvar, '_', ' ')), 
+                          " For NYC Green Taxi"))
   }) 
 
   # Create datatable object the output function is expecting --
