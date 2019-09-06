@@ -7,15 +7,22 @@
 # * Inputs must use reactivity in a logical manner with all outputs displayed to users
 
 
-# histogram of tipping by trip distance, trip duration, fare_amount (radio buttons)
+# scatterplot of tipping by trip distance, trip duration, fare_amount (radio buttons)
 # scatter plot of dates on the x, tip amount on y. color points by number of passengers (dateRangeinput?)
 # box plots of number of passengers, vary plot by fare, distance, tip (selecinput)
 
 
 #Data retrieved from https://catalog.data.gov/dataset/2019-green-taxi-trip-data
 
-taxi <- readit('2019_Green_Taxi_Trip_Data.csv')
+library(data.table)
+library(readit)
+library(dplyr)
 
-head(taxi)
+taxi <- readit('2019_Green_Taxi_Trip_Data.csv')
+taxi <- as.data.frame(taxi)
+
+colnames(taxi)
+taxi <- sample_n(taxi, size = 100000)
+save(taxi, file = 'taxi.Rdata')
 
 
