@@ -1,6 +1,7 @@
 library(shiny)
 library(ggplot2)
 library(DT)
+library(data.table)
 library(stringr)
 library(dplyr)
 library(tools)
@@ -8,7 +9,8 @@ library(shinythemes)
 load("taxi.Rdata")
 
 # Define UI for application that plots features of movies -----------
-ui <- fluidPage(theme = shinytheme("united"),
+ui <- fluidPage(theme = shinytheme("united"), 
+                downloadButton("downloadData", "Download Taxi Data"),
   
   # Application title -----------------------------------------------
   titlePanel("NYC Green Taxi Data"),
@@ -41,12 +43,12 @@ ui <- fluidPage(theme = shinytheme("united"),
     # Output: -------------------------------------------------------
     mainPanel(
       
-      plotOutput(outputId = "scatter"),
+      plotOutput(outputId = "statter"),
       br(),
       # Show datatable --------------------------------------------
       DT::dataTableOutput(outputId = "ridestable"),
-      br()        # a little bit of visual separation
-      
+      br()       # a little bit of visual separation
+    
     )
   )
 )
@@ -60,7 +62,8 @@ server <- function(input, output) {
     filter(taxi, VendorID %in% input$selected)
   })
   
-  output$scatter <- renderPlot({
+  # Create a plot of our independent variable and tip amount -----------
+  output$statter <- renderPlot({
     ggplot(taxi, aes_string(input$xvar, "tip_amount")) +
       geom_bin2d(bins = 50) + 
       xlim(0, (mean(taxi[[input$xvar]]) + 10*sd(taxi[[input$xvar]]))) +
@@ -69,7 +72,7 @@ server <- function(input, output) {
                            y = "Tip Amount",
            title = paste0("Distribution of ", 
                           toTitleCase(str_replace_all(input$xvar, '_', ' ')), 
-                          " For NYC Green Taxi"))
+                          " for NYC Green Taxi"))
   }) 
 
   # Create datatable object the output function is expecting --
@@ -78,6 +81,11 @@ server <- function(input, output) {
                     options = list(pageLength = 10), 
                     rownames = FALSE)
     )
+  output$downloadData <- downloadHandler(
+      filename = "Taxi_Data.csv", 
+      content = function(file) {
+        write.csv(taxi, file)
+      }, contentType = "txt/csv") 
 }
 
 # Run the application -----------------------------------------------
